@@ -517,42 +517,50 @@ namespace AccessDB
             try
             {
                 int result = -2;
-                string[] row = getRows(tName, "name", "name = '" + path + "' and class = '" + className + "' and field is null");
+                string[] row = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "'");
                 try
                 {
                     if (row.Length > 0)
                     {
+                        fieldName = row[0] + "," + fieldName;
                         result = updateRow(tName, "field = '" + fieldName + "'", "name = '" + path + "' and class = '" + className + "'");
                         return result;
                     }
                 }
                 catch (Exception e)
-                {
+                { 
                 }
-                string[] rows = getRows(tName, "name", "name = '" + path + "' and class = '" + className + "' and field = '" + fieldName + "'");
-                try
-                {
-                    if (rows.Length > 0)
-                    {
-                        return -1;
-                    }
-                }
-                catch (Exception e)
-                {
-                }
-                result = insertRow(tName, path, className, fieldName);
-                if (result == 0)
-                {
-                    return result;
-                }
-                else
-                {
-                    return result;
-                }
+                return result;
             }
             catch (Exception e)
             {
                 return -2;
+            }
+        }
+        public int deleteField(string tName, string path, string className, string fieldName)
+        {
+            int result = -2;
+            string[] row = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "'");
+            try
+            {
+                if(row.Length > 0)
+                {
+                    int point = row[0].IndexOf(fieldName);
+                    if(point != -1)
+                    {
+                        row[0] = row[0].Substring(point, fieldName.Length + 1);
+                        return 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                return result;
+            }
+            catch(Exception e)
+            {
+                return result;
             }
         }
     }

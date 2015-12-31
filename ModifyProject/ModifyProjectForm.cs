@@ -25,7 +25,8 @@ namespace ModifyProject
             this.projectName = projectName;
             projectText.Text = this.projectName;
             setCategoryCombo();
-            setTypeCombo();
+            setPrimitiveCombo();
+            setObjectCombo();
             projectText.Enabled = false;
             workAtText.Enabled = false;
             namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
@@ -37,18 +38,23 @@ namespace ModifyProject
             categoryCombo.Items.Add("Class");
             categoryCombo.Items.Add("Field");
         }
-        private void setTypeCombo()
+        private void setPrimitiveCombo()
         {
-            typeCombo.Items.Clear();
-            typeCombo.Items.Add("short");
-            typeCombo.Items.Add("int");
-            typeCombo.Items.Add("long");
-            typeCombo.Items.Add("float");
-            typeCombo.Items.Add("double");
-            typeCombo.Items.Add("char");
-            typeCombo.Items.Add("string");
-            typeCombo.Items.Add("bool");
-            typeCombo.Enabled = false;
+            primitiveCombo.Items.Clear();
+            primitiveCombo.Items.Add("short");
+            primitiveCombo.Items.Add("int");
+            primitiveCombo.Items.Add("long");
+            primitiveCombo.Items.Add("float");
+            primitiveCombo.Items.Add("double");
+            primitiveCombo.Items.Add("char");
+            primitiveCombo.Items.Add("bool");
+            primitiveCombo.Enabled = false;
+        }
+        private void setObjectCombo()
+        {
+            objectCombo.Items.Clear();
+            objectCombo.Items.Add("string");
+            objectCombo.Enabled = false;
         }
         private void setTreeViewClear()
         {
@@ -58,7 +64,8 @@ namespace ModifyProject
         private void resetAll()
         {
             setCategoryCombo();
-            setTypeCombo();
+            setPrimitiveCombo();
+            setObjectCombo();
             workAtText.Clear();
             nameText.Clear();
             setTreeViewClear();
@@ -67,15 +74,19 @@ namespace ModifyProject
         private void categoryCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             workAtText.Clear();
+            primitiveCombo.SelectedItem = null;
+            objectCombo.SelectedItem = null;
             if (categoryCombo.SelectedIndex == 0)
             {
                 workAtText.Text = projectName;
-                typeCombo.Enabled = false;
+                primitiveCombo.Enabled = false;
+                objectCombo.Enabled = false;
                 //nameText.Text = categoryCombo.SelectedItem.ToString();
             }
             else if (categoryCombo.SelectedIndex == 1)
             {
-                typeCombo.Enabled = false;
+                primitiveCombo.Enabled = false;
+                objectCombo.Enabled = false;
                 if (namespaceTreeView.SelectedNode != null)
                 {
                     workAtText.Text = namespaceTree.getPath();
@@ -83,7 +94,8 @@ namespace ModifyProject
             }
             else if (categoryCombo.SelectedIndex == 2)
             {
-                typeCombo.Enabled = true;
+                primitiveCombo.Enabled = true;
+                objectCombo.Enabled = true;
             }
         }
         private void createBtn_Click(object sender, EventArgs e)
@@ -153,7 +165,24 @@ namespace ModifyProject
                 }
                 else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
                 {
-                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text);
+                    string type = null;
+                    if(primitiveCombo.SelectedItem == null && objectCombo.SelectedItem == null)
+                    {
+                        MessageBox.Show("Select a field type for this work.");
+                        return;
+                    }
+                    else
+                    {
+                        if(primitiveCombo.SelectedItem != null)
+                        {
+                            type = primitiveCombo.SelectedItem.ToString();
+                        }
+                        else if(objectCombo.SelectedItem != null)
+                        {
+                            type = objectCombo.SelectedItem.ToString();
+                        }
+                    }
+                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text + "(" + type + ")");
                     if (result == 0)
                     {
                         MessageBox.Show("Succeed in Creating new Field.");
@@ -366,17 +395,33 @@ namespace ModifyProject
             }
             else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
             {
-                workAtText.Text = namespaceTree.getPath() + " / " + classTree.getClassName();
-                string selNode = classTree.getFieldName();
-                if (selNode != null)
-                {
-                    nameText.Text = selNode;
+                try {
+                    workAtText.Text = namespaceTree.getPath() + " / " + classTree.getClassName();
+                    string selNode = classTree.getFieldName();
+                    int point = selNode.IndexOf("(");
+                    selNode = selNode.Substring(0, point);
+                    if (selNode != null)
+                    {
+                        nameText.Text = selNode;
+                    }
+                    else
+                    {
+                        nameText.Text = "";
+                    }
                 }
-                else
+                catch(Exception excep)
                 {
-                    nameText.Text = "";
+                    return;
                 }
             }
+        }
+        private void objectCombo_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            primitiveCombo.SelectedItem = null;
+        }
+        private void primitiveCombo_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            objectCombo.SelectedItem = null;
         }
     }
 }
