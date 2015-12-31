@@ -184,7 +184,6 @@ namespace ModifyProject
                         row[0] = row[0].Substring(point + 1);
                         point = row[0].IndexOf(",");
                     }
-                    treeView.Nodes[i].Nodes.Add(row[0]);
                 }
                 i++;
             }

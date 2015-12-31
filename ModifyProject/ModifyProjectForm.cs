@@ -78,24 +78,69 @@ namespace ModifyProject
             objectCombo.SelectedItem = null;
             if (categoryCombo.SelectedIndex == 0)
             {
-                workAtText.Text = projectName;
                 primitiveCombo.Enabled = false;
                 objectCombo.Enabled = false;
-                //nameText.Text = categoryCombo.SelectedItem.ToString();
+                workAtText.Text = projectName;
+                if (namespaceTree.getPath() != null)
+                {
+                    nameText.Text = namespaceTree.getPath();
+                }
+                else
+                {
+                    nameText.Text = null;
+                }
             }
             else if (categoryCombo.SelectedIndex == 1)
             {
                 primitiveCombo.Enabled = false;
                 objectCombo.Enabled = false;
-                if (namespaceTreeView.SelectedNode != null)
+                if (namespaceTree.getPath() != null)
                 {
                     workAtText.Text = namespaceTree.getPath();
+                    if (classTree.getClassName() != null)
+                    {
+                        nameText.Text = classTree.getClassName();
+                    }
+                    else
+                    {
+                        nameText.Text = null;
+                    }
+                }
+                else
+                {
+                    workAtText.Text = null;
+                    nameText.Text = null;
                 }
             }
             else if (categoryCombo.SelectedIndex == 2)
             {
                 primitiveCombo.Enabled = true;
                 objectCombo.Enabled = true;
+                if (namespaceTree.getPath() != null && classTree.getClassName() != null)
+                {
+                    workAtText.Text = namespaceTree.getPath() + " / " + classTree.getClassName();
+                }
+                else
+                {
+                    workAtText.Text = null;
+                }
+                try {
+                    if (classTree.getFieldName() != null)
+                    {
+                        string selNode = classTree.getFieldName();
+                        int point = selNode.IndexOf("(");
+                        selNode = selNode.Substring(0, point);
+                        nameText.Text = selNode;
+                    }
+                    else
+                    {
+                        nameText.Text = null;
+                    }
+                }
+                catch(Exception excep)
+                {
+                    nameText.Text = null;
+                }
             }
         }
         private void createBtn_Click(object sender, EventArgs e)
@@ -182,7 +227,7 @@ namespace ModifyProject
                             type = objectCombo.SelectedItem.ToString();
                         }
                     }
-                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text + "(" + type + ")");
+                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text, type);
                     if (result == 0)
                     {
                         MessageBox.Show("Succeed in Creating new Field.");
@@ -277,7 +322,22 @@ namespace ModifyProject
                 }
                 else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
                 {
-                    // delete field
+                    AccessSqlite sql = new AccessSqlite(fileName);
+                    result = sql.deleteField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text);
+                    if (result == 0)
+                    {
+                        MessageBox.Show("Succeed in deleting the Field.");
+                    }
+                    else if (result == -1)
+                    {
+                        MessageBox.Show("The Field dose not exist.");
+                        return;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Deleting the Field failed.");
+                        return;
+                    }
                 }
             }
 
@@ -400,17 +460,11 @@ namespace ModifyProject
                     string selNode = classTree.getFieldName();
                     int point = selNode.IndexOf("(");
                     selNode = selNode.Substring(0, point);
-                    if (selNode != null)
-                    {
-                        nameText.Text = selNode;
-                    }
-                    else
-                    {
-                        nameText.Text = "";
-                    }
+                    nameText.Text = selNode;
                 }
                 catch(Exception excep)
                 {
+                    nameText.Text = null;
                     return;
                 }
             }
