@@ -517,24 +517,38 @@ namespace AccessDB
             try
             {
                 int result = -2;
-                string[] rows = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "' and field is null");
+                string[] row = getRows(tName, "name", "name = '" + path + "' and class = '" + className + "' and field is null");
                 try
                 {
-                    if (rows.Length > 0)
+                    if (row.Length > 0)
                     {
-                        //result = updateRow(tName, "field =
+                        result = updateRow(tName, "field = '" + fieldName + "'", "name = '" + path + "' and class = '" + className + "'");
+                        return result;
                     }
                 }
                 catch (Exception e)
                 {
-                    return -2;
                 }
-                int point = rows[0].IndexOf(",");
-                while (point != -1)
+                string[] rows = getRows(tName, "name", "name = '" + path + "' and class = '" + className + "' and field = '" + fieldName + "'");
+                try
                 {
-
+                    if (rows.Length > 0)
+                    {
+                        return -1;
+                    }
                 }
-                return 0;
+                catch (Exception e)
+                {
+                }
+                result = insertRow(tName, path, className, fieldName);
+                if (result == 0)
+                {
+                    return result;
+                }
+                else
+                {
+                    return result;
+                }
             }
             catch (Exception e)
             {

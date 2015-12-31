@@ -153,7 +153,21 @@ namespace ModifyProject
                 }
                 else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
                 {
-                    // add field
+                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text);
+                    if (result == 0)
+                    {
+                        MessageBox.Show("Succeed in Creating new Field.");
+                    }
+                    else if (result == -1)
+                    {
+                        MessageBox.Show("The Field is duplicated.");
+                        return;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Creating new Field failed.");
+                        return;
+                    }
                 }
             }
             resetAll();
