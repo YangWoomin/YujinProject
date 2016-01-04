@@ -561,7 +561,19 @@ namespace AccessDB
                     int point = row[0].IndexOf(fieldName);
                     if(point != -1)
                     {
-                        row[0] = row[0].Substring(point, fieldName.Length + 1);
+                        if(point == 1)
+                        {
+                            int point2 = row[0].IndexOf(",");
+                            row[0] = row[0].Substring(point2);
+                        }
+                        else
+                        {
+                            string temp = row[0].Substring(0, point);
+                            row[0] = row[0].Substring(point);
+                            int point2 = row[0].IndexOf(",");
+                            row[0] = row[0].Substring(point2 + 1);
+                            row[0] = temp + row[0];
+                        }
                         result = updateRow(tName, "field = '" + row[0] + "'", "name = '" + path + "' and class = '" + className + "'");
                         return result;
                     }

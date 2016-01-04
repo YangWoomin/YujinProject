@@ -127,10 +127,39 @@ namespace ModifyProject
                 try {
                     if (classTree.getFieldName() != null)
                     {
+                        primitiveCombo.SelectedItem = null;
+                        objectCombo.SelectedItem = null;
                         string selNode = classTree.getFieldName();
                         int point = selNode.IndexOf("(");
+                        string type = selNode.Substring(point + 1);
+                        type = type.Substring(0, type.Length - 1);
                         selNode = selNode.Substring(0, point);
                         nameText.Text = selNode;
+                        int flag = 0;
+                        int i = 0;
+                        while (primitiveCombo.Items.Count > i)
+                        {
+                            if (primitiveCombo.Items[i].ToString() == type)
+                            {
+                                flag = 1;
+                                primitiveCombo.SelectedIndex = i;
+                                break;
+                            }
+                            i++;
+                        }
+                        if (flag == 0)
+                        {
+                            i = 0;
+                            while (objectCombo.Items.Count > i)
+                            {
+                                if (objectCombo.Items[i].ToString() == type)
+                                {
+                                    objectCombo.SelectedIndex = i;
+                                    break;
+                                }
+                                i++;
+                            }
+                        }
                     }
                     else
                     {
@@ -456,11 +485,40 @@ namespace ModifyProject
             else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
             {
                 try {
+                    primitiveCombo.SelectedItem = null;
+                    objectCombo.SelectedItem = null;
                     workAtText.Text = namespaceTree.getPath() + " / " + classTree.getClassName();
                     string selNode = classTree.getFieldName();
                     int point = selNode.IndexOf("(");
+                    string type = selNode.Substring(point + 1);
+                    type = type.Substring(0, type.Length - 1);
                     selNode = selNode.Substring(0, point);
                     nameText.Text = selNode;
+                    int flag = 0;
+                    int i = 0;
+                    while(primitiveCombo.Items.Count > i)
+                    {
+                        if(primitiveCombo.Items[i].ToString() == type)
+                        {
+                            flag = 1;
+                            primitiveCombo.SelectedIndex = i;
+                            break;
+                        }
+                        i++;
+                    }
+                    if(flag == 0)
+                    {
+                        i = 0;
+                        while(objectCombo.Items.Count > i)
+                        {
+                            if(objectCombo.Items[i].ToString() == type)
+                            {
+                                objectCombo.SelectedIndex = i;
+                                break;
+                            }
+                            i++;
+                        }
+                    }
                 }
                 catch(Exception excep)
                 {
