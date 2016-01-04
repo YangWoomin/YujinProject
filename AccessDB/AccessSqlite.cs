@@ -589,5 +589,27 @@ namespace AccessDB
                 return result;
             }
         }
+        public int changeField(string tName, string path, string className, string fieldName, string newFieldName, string newFieldType)
+        {
+            if(fieldName == newFieldName + "(" + newFieldType + ")")
+            {
+                return -3;
+            }
+            int result = -2;
+            try
+            {
+                result = deleteField(tName, path, className, fieldName);
+                if(result != 0)
+                {
+                    return result;
+                }
+                result = insertField(tName, path, className, newFieldName, newFieldType);
+                return result;
+            }
+            catch(Exception e)
+            {
+                return result;
+            }
+        }
     }
 }

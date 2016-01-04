@@ -17,7 +17,6 @@ namespace Project2015_12
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
-            Console.Write("log1");
         }
     }
 }

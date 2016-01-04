@@ -454,7 +454,32 @@ namespace ModifyProject
                 }
                 else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
                 {
-
+                    if(classTree.getFieldName() == null)
+                    {
+                        MessageBox.Show("Click a Field in View for this work.");
+                        return;
+                    }
+                    AccessSqlite sql = new AccessSqlite(fileName);
+                    int result = sql.changeField(projectName, namespaceTree.getPath(), classTree.getClassName(), classTree.getFieldName(), nameText.Text, (primitiveCombo.SelectedItem == null ? objectCombo.SelectedItem.ToString() : primitiveCombo.SelectedItem.ToString()));
+                    if (result == 0)
+                    {
+                        MessageBox.Show("Succeed in changing the Field.");
+                    }
+                    else if (result == -1)
+                    {
+                        MessageBox.Show("The Field is duplicated.");
+                        return;
+                    }
+                    else if(result == -3)
+                    {
+                        MessageBox.Show("Input changed value.");
+                        return;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Changing the Field failed.");
+                        return;
+                    }
                 }
             }
             resetAll();
