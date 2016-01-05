@@ -17,6 +17,7 @@ namespace ModifyProject
         private string projectName;
         private SetNamespaceTreeView namespaceTree;
         private SetClassTreeView classTree;
+        private CheckCharacter checkStr;
 
         public ModifyProjectForm(string fileName, string projectName)
         {
@@ -30,6 +31,7 @@ namespace ModifyProject
             projectText.Enabled = false;
             workAtText.Enabled = false;
             namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
+            checkStr = new CheckCharacter();
         }
         private void setCategoryCombo()
         {
@@ -174,6 +176,7 @@ namespace ModifyProject
         }
         private void createBtn_Click(object sender, EventArgs e)
         {
+            AccessSqlite sql = new AccessSqlite(fileName);
             if (categoryCombo.SelectedItem == null)
             {
                 MessageBox.Show("Select a Category for this work.");
@@ -198,85 +201,84 @@ namespace ModifyProject
                 MessageBox.Show("Input a name in Name Textbox for this work.");
                 return;
             }
-            else
+            else if (categoryCombo.SelectedItem.ToString() == "Namespace" && checkStr.checkNamespace(nameText.Text) == 0)
             {
-                AccessSqlite sql = new AccessSqlite(fileName);
-                if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Namespace")
+                int result = sql.insertNamespace(projectName, nameText.Text);
+                if (result == 0)
                 {
-                    int result = sql.insertNamespace(projectName, nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in Creating new Namespace.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Namespace is duplicated.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Creating new Namespace failed.");
-                        return;
-                    }
+                    MessageBox.Show("Succeed in Creating new Namespace.");
+                    resetAll();
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Class")
+                else if (result == -1)
                 {
-                    int result = sql.insertClass(projectName, namespaceTree.getPath(), nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in Creating new Class.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Class is duplicated.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Creating new Class failed.");
-                        return;
-                    }
+                    MessageBox.Show("The Namespace is duplicated.");
+                    return;
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
+                else
                 {
-                    string type = null;
-                    if(primitiveCombo.SelectedItem == null && objectCombo.SelectedItem == null)
-                    {
-                        MessageBox.Show("Select a field type for this work.");
-                        return;
-                    }
-                    else
-                    {
-                        if(primitiveCombo.SelectedItem != null)
-                        {
-                            type = primitiveCombo.SelectedItem.ToString();
-                        }
-                        else if(objectCombo.SelectedItem != null)
-                        {
-                            type = objectCombo.SelectedItem.ToString();
-                        }
-                    }
-                    int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text, type);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in Creating new Field.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Field is duplicated.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Creating new Field failed.");
-                        return;
-                    }
+                    MessageBox.Show("Creating new Namespace failed.");
+                    return;
                 }
             }
-            resetAll();
+            else if (categoryCombo.SelectedItem.ToString() == "Class" && checkStr.checkString(nameText.Text) == 0)
+            {
+                int result = sql.insertClass(projectName, namespaceTree.getPath(), nameText.Text);
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in Creating new Class.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Class is duplicated.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Creating new Class failed.");
+                    return;
+                }
+            }
+            else if (categoryCombo.SelectedItem.ToString() == "Field" && checkStr.checkString(nameText.Text) == 0)
+            {
+                string type = null;
+                if(primitiveCombo.SelectedItem == null && objectCombo.SelectedItem == null)
+                {
+                    MessageBox.Show("Select a field type for this work.");
+                    return;
+                }
+                else
+                {
+                    if(primitiveCombo.SelectedItem != null)
+                    {
+                        type = primitiveCombo.SelectedItem.ToString();
+                    }
+                    else if(objectCombo.SelectedItem != null)
+                    {
+                        type = objectCombo.SelectedItem.ToString();
+                    }
+                }
+                int result = sql.insertField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text, type);
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in Creating new Field.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Field is duplicated.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Creating new Field failed.");
+                    return;
+                }
+            }
         }
         private void deleteBtn_Click(object sender, EventArgs e)
         {
+            AccessSqlite sql = new AccessSqlite(fileName);
             int result = -2;
             if (categoryCombo.SelectedItem == null)
             {
@@ -302,78 +304,73 @@ namespace ModifyProject
                 MessageBox.Show("Click a Namespace in Namespace TreeView for this work.");
                 return;
             }
-            else
+            else if (categoryCombo.SelectedItem.ToString() == "Namespace" && checkStr.checkNamespace(nameText.Text) == 0)
             {
-                if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Namespace")
+                WarningForm warningForm = new WarningForm();
+                warningForm.ShowDialog();
+                if (!warningForm.getCheckOK())
                 {
-                    WarningForm warningForm = new WarningForm();
-                    warningForm.ShowDialog();
-                    if (!warningForm.getCheckOK())
-                    {
-                        return;
-                    }
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    result = sql.deleteNamespace(projectName, nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in deleting the Namespace.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Namespace dose not exist.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Deleting the Namespace failed.");
-                        return;
-                    }
+                    return;
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Class")
+                result = sql.deleteNamespace(projectName, nameText.Text);
+                if (result == 0)
                 {
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    result = sql.deleteClass(projectName, workAtText.Text, classTree.getClassName());
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in deleting the Class.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Class dose not exist.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Deleting the Class failed.");
-                        return;
-                    }
-
+                    MessageBox.Show("Succeed in deleting the Namespace.");
+                    resetAll();
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
+                else if (result == -1)
                 {
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    result = sql.deleteField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in deleting the Field.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Field dose not exist.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Deleting the Field failed.");
-                        return;
-                    }
+                    MessageBox.Show("The Namespace dose not exist.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Deleting the Namespace failed.");
+                    return;
                 }
             }
-
-            resetAll();
+            else if (categoryCombo.SelectedItem.ToString() == "Class" && checkStr.checkString(nameText.Text) == 0)
+            {
+                result = sql.deleteClass(projectName, workAtText.Text, classTree.getClassName());
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in deleting the Class.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Class dose not exist.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Deleting the Class failed.");
+                    return;
+                }
+            }
+            else if (categoryCombo.SelectedItem.ToString() == "Field" && checkStr.checkString(nameText.Text) == 0)
+            {
+                result = sql.deleteField(projectName, namespaceTree.getPath(), classTree.getClassName(), nameText.Text);
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in deleting the Field.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Field dose not exist.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Deleting the Field failed.");
+                    return;
+                }
+            }
         }
         private void changeBtn_Click(object sender, EventArgs e)
         {
+            AccessSqlite sql = new AccessSqlite(fileName);
             if (categoryCombo.SelectedItem == null)
             {
                 MessageBox.Show("Select a Category for this work.");
@@ -402,112 +399,124 @@ namespace ModifyProject
                 MessageBox.Show("Input a name in Name Textbox for this work.");
                 return;
             }
-            else
+            else if (categoryCombo.SelectedItem.ToString() == "Namespace" && checkStr.checkNamespace(nameText.Text) == 0)
             {
-                if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Namespace")
+                if (namespaceTree.getPath() == nameText.Text)
                 {
-                    if (namespaceTree.getPath() == nameText.Text)
-                    {
-                        MessageBox.Show("Input changed name in Name Textbox for this work.");
-                        return;
-                    }
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    int result = sql.changeNamespace(projectName, namespaceTree.getPath(), nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in changing the Namespace.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Namespace is duplicated.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Changing the Namespace failed.");
-                        return;
-                    }
+                    MessageBox.Show("Input changed name in Name Textbox for this work.");
+                    return;
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Class")
+                
+                int result = sql.changeNamespace(projectName, namespaceTree.getPath(), nameText.Text);
+                if (result == 0)
                 {
-                    if (classTree.getClassName() == nameText.Text)
-                    {
-                        MessageBox.Show("Input changed name in Name Textbox for this work.");
-                        return;
-                    }
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    int result = sql.changeClass(projectName, workAtText.Text, classTree.getClassName(), nameText.Text);
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in changing the Class.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Class is duplicated.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Changing the Class failed.");
-                        return;
-                    }
+                    MessageBox.Show("Succeed in changing the Namespace.");
+                    resetAll();
                 }
-                else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
+                else if (result == -1)
                 {
-                    if(classTree.getFieldName() == null)
-                    {
-                        MessageBox.Show("Click a Field in View for this work.");
-                        return;
-                    }
-                    AccessSqlite sql = new AccessSqlite(fileName);
-                    int result = sql.changeField(projectName, namespaceTree.getPath(), classTree.getClassName(), classTree.getFieldName(), nameText.Text, (primitiveCombo.SelectedItem == null ? objectCombo.SelectedItem.ToString() : primitiveCombo.SelectedItem.ToString()));
-                    if (result == 0)
-                    {
-                        MessageBox.Show("Succeed in changing the Field.");
-                    }
-                    else if (result == -1)
-                    {
-                        MessageBox.Show("The Field is duplicated.");
-                        return;
-                    }
-                    else if(result == -3)
-                    {
-                        MessageBox.Show("Input changed value.");
-                        return;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Changing the Field failed.");
-                        return;
-                    }
+                    MessageBox.Show("The Namespace is duplicated.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Changing the Namespace failed.");
+                    return;
                 }
             }
-            resetAll();
+            else if (categoryCombo.SelectedItem.ToString() == "Class" && checkStr.checkString(nameText.Text) == 0)
+            {
+                if (classTree.getClassName() == nameText.Text)
+                {
+                    MessageBox.Show("Input changed name in Name Textbox for this work.");
+                    return;
+                }
+                int result = sql.changeClass(projectName, workAtText.Text, classTree.getClassName(), nameText.Text);
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in changing the Class.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Class is duplicated.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Changing the Class failed.");
+                    return;
+                }
+            }
+            else if (categoryCombo.SelectedItem.ToString() == "Field" && checkStr.checkString(nameText.Text) == 0)
+            {
+                if(classTree.getFieldName() == null)
+                {
+                    MessageBox.Show("Click a Field in View for this work.");
+                    return;
+                }
+                int result = sql.changeField(projectName, namespaceTree.getPath(), classTree.getClassName(), classTree.getFieldName(), nameText.Text, (primitiveCombo.SelectedItem == null ? objectCombo.SelectedItem.ToString() : primitiveCombo.SelectedItem.ToString()));
+                if (result == 0)
+                {
+                    MessageBox.Show("Succeed in changing the Field.");
+                    resetAll();
+                }
+                else if (result == -1)
+                {
+                    MessageBox.Show("The Field is duplicated.");
+                    return;
+                }
+                else if(result == -3)
+                {
+                    MessageBox.Show("Input changed value.");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Changing the Field failed.");
+                    return;
+                }
+            }
         }
         private void namespaceTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
-            if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Namespace")
+            if(categoryCombo.SelectedItem == null)
+            {
+                categoryCombo.SelectedIndex = 0;
+            }
+            else if(categoryCombo.SelectedIndex == 2)
+            {
+                categoryCombo.SelectedIndex = 0;
+            }
+            if (categoryCombo.SelectedIndex == 0)
             {
                 nameText.Text = namespaceTree.getPath();
             }
-            else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Class")
+            else if (categoryCombo.SelectedIndex == 1)
             {
                 workAtText.Text = namespaceTree.getPath();
-                nameText.Text = "";
-            }
-            else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
-            {
                 nameText.Text = "";
             }
         }
         private void classTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Class")
+            if(categoryCombo.SelectedIndex == 0 || categoryCombo.SelectedIndex == 1)
+            {
+                if(classTree.getFieldName() == null)
+                {
+                    categoryCombo.SelectedIndex = 1;
+                }
+                else
+                {
+                    categoryCombo.SelectedIndex = 2;
+                }
+            }
+            if (categoryCombo.SelectedIndex == 1)
             {
                 nameText.Text = classTree.getClassName();
             }
-            else if (categoryCombo.SelectedItem != null && categoryCombo.SelectedItem.ToString() == "Field")
+            else if (categoryCombo.SelectedIndex == 2)
             {
                 try {
                     primitiveCombo.SelectedItem = null;

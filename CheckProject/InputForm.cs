@@ -17,6 +17,7 @@ namespace CheckProject
         private string fileName;
         private string beforeName;
         private string afterName;
+        private CheckCharacter checkStr;
 
         public InputForm(string fileName, int work, string beforeName)
         {
@@ -35,6 +36,7 @@ namespace CheckProject
             {
                 this.Text = "Modify Project";
             }
+            checkStr = new CheckCharacter();
         }
         public string getAfterName()
         {
@@ -47,6 +49,10 @@ namespace CheckProject
                 if (inputText.Text == "")
                 {
                     MessageBox.Show("Input a name in Name Textbox for this work.");
+                    return;
+                }
+                else if(checkStr.checkString(inputText.Text) != 0)
+                {
                     return;
                 }
                 else
@@ -74,6 +80,10 @@ namespace CheckProject
                 if (inputText.Text == "")
                 {
                     MessageBox.Show("Input a name in Name Textbox for this work.");
+                    return;
+                }
+                else if (checkStr.checkString(inputText.Text) != 0)
+                {
                     return;
                 }
                 else
