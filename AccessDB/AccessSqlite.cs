@@ -379,16 +379,10 @@ namespace AccessDB
                 }
                 catch (Exception e)
                 {
+                    return -1;
                 }
                 int result = deleteRow(tName, "name like '" + path + ".%' or name = '" + path + "'");
-                if (result == 0)
-                {
-                    return result;
-                }
-                else
-                {
-                    return result;
-                }
+                return result;
             }
             catch (Exception e)
             {
@@ -522,14 +516,14 @@ namespace AccessDB
                 {
                     if(row.Length > 0)
                     {
-                        result = updateRow(tName, "field = '" + fieldName + "(" + fieldType + "),'", "name = '" + path + "' and class = '" + className + "'");
+                        result = updateRow(tName, "field = '" + fieldName + "-" + fieldType + ",'", "name = '" + path + "' and class = '" + className + "'");
                         return 0;
                     }
                 }
                 catch(Exception e)
                 {
                 }
-                row = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "' and (field like '" + fieldName + "(%' or field like '%," + fieldName + "(%')");
+                row = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "' and (field like '" + fieldName + "-%' or field like '%," + fieldName + "-%')");
                 try
                 {
                     if (row.Length > 0)
@@ -541,7 +535,7 @@ namespace AccessDB
                 { 
                 }
                 row = getRows(tName, "field", "name = '" + path + "' and class = '" + className + "'");
-                fieldName = row[0] + fieldName + "(" + fieldType + "),";
+                fieldName = row[0] + fieldName + "-" + fieldType + ",";
                 result = updateRow(tName, "field = '" + fieldName + "'", "name = '" + path + "' and class = '" + className + "'");
                 return result;
             }
@@ -558,40 +552,48 @@ namespace AccessDB
             {
                 if(row.Length > 0)
                 {
-                    int point = row[0].IndexOf(fieldName);
-                    if(point != -1)
-                    {
-                        if(point == 1)
+                    try {
+                        int point = row[0].IndexOf(fieldName);
+                        if (point != -1)
                         {
-                            int point2 = row[0].IndexOf(",");
-                            row[0] = row[0].Substring(point2);
+                            if (point == 1)
+                            {
+                                int point2 = row[0].IndexOf(",");
+                                row[0] = row[0].Substring(point2);
+                            }
+                            else
+                            {
+                                string temp = row[0].Substring(0, point);
+                                row[0] = row[0].Substring(point);
+                                int point2 = row[0].IndexOf(",");
+                                row[0] = row[0].Substring(point2 + 1);
+                                row[0] = temp + row[0];
+                            }
+                            result = updateRow(tName, "field = '" + row[0] + "'", "name = '" + path + "' and class = '" + className + "'");
+                            return result;
                         }
                         else
                         {
-                            string temp = row[0].Substring(0, point);
-                            row[0] = row[0].Substring(point);
-                            int point2 = row[0].IndexOf(",");
-                            row[0] = row[0].Substring(point2 + 1);
-                            row[0] = temp + row[0];
+                            return -1;
                         }
-                        result = updateRow(tName, "field = '" + row[0] + "'", "name = '" + path + "' and class = '" + className + "'");
+                    }
+                    catch(Exception e)
+                    {
                         return result;
                     }
-                    else
-                    {
-                        return -1;
-                    }
                 }
-                return result;
+                return -1;
             }
             catch(Exception e)
             {
-                return result;
+                return -1;
             }
         }
         public int changeField(string tName, string path, string className, string fieldName, string newFieldName, string newFieldType)
         {
-            if(fieldName == newFieldName + "(" + newFieldType + ")")
+            int point = fieldName.IndexOf("(");
+            fieldName = fieldName.Substring(0, point);
+            if(fieldName == newFieldName + "-" + newFieldType)
             {
                 return -3;
             }

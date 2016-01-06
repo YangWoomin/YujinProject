@@ -119,8 +119,6 @@ namespace ModifyProject
                 }
                 tempNode = tempNode.getNext();
             }
-            nodeList = null;
-            tempNode = null;
         }
         public string getPath()
         {
@@ -142,6 +140,40 @@ namespace ModifyProject
             catch (Exception e)
             {
                 return null;
+            }
+        }
+        public void expandNode(string path)
+        {
+            int point = path.LastIndexOf(".");
+            if(point != -1)
+            {
+                path = path.Substring(0, point);
+            }
+            tempNode = nodeList;
+            TreeNode theNode = null;
+            if (path == tempNode.getPath())
+            {
+                theNode = tempNode.getNode();
+            }
+            while (tempNode.getNext() != null)
+            {
+                tempNode = tempNode.getNext();
+                if (path == tempNode.getPath())
+                {
+                    theNode = tempNode.getNode();
+                }
+            }
+            theNode.Expand();
+            try
+            {
+                while (theNode.Parent != null)
+                {
+                    theNode = theNode.Parent;
+                    theNode.Expand();
+                }
+            }
+            catch (Exception e)
+            {
             }
         }
     }
@@ -172,7 +204,7 @@ namespace ModifyProject
             while (rows.Length > i)
             {
                 treeView.Nodes.Add(rows[i]);
-                treeView.Nodes[i].BackColor = Color.Blue;
+                treeView.Nodes[i].BackColor = Color.DarkViolet;
                 treeView.Nodes[i].ForeColor = Color.White;
                 string[] row = sql.getRows(project, "field", "name = '" + path + "' and class = '" + rows[i] + "'");
                 if (row != null && row[0] != "")
@@ -180,7 +212,10 @@ namespace ModifyProject
                     int point = row[0].IndexOf(",");
                     while (point != -1)
                     {
-                        treeView.Nodes[i].Nodes.Add(row[0].Substring(0, point));
+                        string temp = row[0].Substring(0, point);
+                        int point2 = temp.IndexOf("-");
+                        temp = temp.Substring(0, point2) + "(" + temp.Substring(point2 + 1) + ")";
+                        treeView.Nodes[i].Nodes.Add(temp);
                         row[0] = row[0].Substring(point + 1);
                         point = row[0].IndexOf(",");
                     }
@@ -220,6 +255,20 @@ namespace ModifyProject
             catch (Exception e)
             {
                 return null;
+            }
+        }
+        public void expandNode(string className)
+        {
+            int i = 0;
+            
+            while(treeView.Nodes.Count > i)
+            {
+                if(treeView.Nodes[i].ToString() == "TreeNode: " + className)
+                {
+                    treeView.Nodes[i].Expand();
+                    break;
+                }
+                i++;
             }
         }
     }
