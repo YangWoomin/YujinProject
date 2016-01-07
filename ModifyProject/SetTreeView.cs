@@ -149,6 +149,10 @@ namespace ModifyProject
             {
                 path = path.Substring(0, point);
             }
+            else
+            {
+                return;
+            }
             tempNode = nodeList;
             TreeNode theNode = null;
             if (path == tempNode.getPath())
