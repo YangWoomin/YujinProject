@@ -142,6 +142,25 @@ namespace ModifyProject
                 return null;
             }
         }
+        public string getParentPath()
+        {
+            try
+            {
+                string path;
+                TreeNode tempNode = treeView.SelectedNode.Parent;
+                path = tempNode.Text;
+                while(tempNode.Parent != null)
+                {
+                    tempNode = tempNode.Parent;
+                    path = path + tempNode.Text;
+                }
+                return path;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
+        }
         public void expandNode(string path)
         {
             int point = path.LastIndexOf(".");
@@ -267,7 +286,7 @@ namespace ModifyProject
             
             while(treeView.Nodes.Count > i)
             {
-                if(treeView.Nodes[i].ToString() == "TreeNode: " + className)
+                if(treeView.Nodes[i].Text == className)
                 {
                     treeView.Nodes[i].Expand();
                     break;

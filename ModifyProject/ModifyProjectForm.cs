@@ -160,36 +160,19 @@ namespace ModifyProject
         private void namespaceTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
-            if(categoryCombo.SelectedItem == null)
-            {
-                categoryCombo.SelectedIndex = 0;
-            }
-            else if(categoryCombo.SelectedIndex == 2)
-            {
-                categoryCombo.SelectedIndex = 0;
-            }
-            if (categoryCombo.SelectedIndex == 0)
-            {
-                nameText.Text = namespaceTree.getPath();
-            }
-            else if (categoryCombo.SelectedIndex == 1)
-            {
-                workAtText.Text = namespaceTree.getPath();
-                nameText.Text = "";
-            }
+            categoryCombo.SelectedIndex = 0;
+            workAtText.Text = projectName;
+            nameText.Text = namespaceTree.getPath();
         }
         private void classTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if(categoryCombo.SelectedIndex == 0 || categoryCombo.SelectedIndex == 1)
+            if(classTree.getFieldName() == null)
             {
-                if(classTree.getFieldName() == null)
-                {
-                    categoryCombo.SelectedIndex = 1;
-                }
-                else
-                {
-                    categoryCombo.SelectedIndex = 2;
-                }
+                categoryCombo.SelectedIndex = 1;
+            }
+            else
+            {
+                categoryCombo.SelectedIndex = 2;
             }
             if (categoryCombo.SelectedIndex == 1)
             {
@@ -477,10 +460,26 @@ namespace ModifyProject
                     MessageBox.Show("Input changed name in Name Textbox for this work.");
                     return;
                 }
+                else if(nameText.Text.LastIndexOf(".") != -1)
+                {
+                    int point = nameText.Text.LastIndexOf(".");
+                    string temp = nameText.Text.Substring(0, point);
+                    if(namespaceTree.getParentPath() == null || namespaceTree.getParentPath() != temp)
+                    {
+                        MessageBox.Show("Invalid namespace. Try again appropriately.");
+                        return;
+                    }
+                }
+                else if(namespaceTree.getPath().LastIndexOf(".") != -1)
+                {
+                    MessageBox.Show("Invalid namespace. Try again appropriately.");
+                    return;
+                }
                 result = sql.changeNamespace(projectName, namespaceTree.getPath(), nameText.Text);
                 if (result == 0)
                 {
                     namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
+                    namespaceTree.expandNode(nameText.Text);
                     nameText.Text = null;
                 }
                 else if (result == -1)
