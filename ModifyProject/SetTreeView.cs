@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AccessDB;
 using System.Drawing;
 using System.Windows.Forms;
+using AccessFile;
 
 namespace ModifyProject
 {
@@ -49,6 +50,9 @@ namespace ModifyProject
                 {
                     Node newNode = new Node(row);
                     tempNode.setNext(newNode);
+                    row = row.Replace(".", @"\");
+                    ManageFile mf = new ManageFile();
+                    mf.createDirectory(project + @"\" + row);
                 }
             }
             catch (Exception e)
@@ -59,7 +63,7 @@ namespace ModifyProject
         private void renewTreeView()
         {
             treeView.Nodes.Clear();
-            AccessSqlite sql = new AccessSqlite(fileName);
+            AccessSqlite sql = new AccessSqlite();
             string[] rows = sql.getRows(project, "name", null);
             int i = 0;
             if (rows == null)
@@ -219,7 +223,7 @@ namespace ModifyProject
         private void renewTreeView()
         {
             treeView.Nodes.Clear();
-            AccessSqlite sql = new AccessSqlite(fileName);
+            AccessSqlite sql = new AccessSqlite();
             string[] rows = sql.getRows(project, "class", "name = '" + path + "'");
             int i = 0;
             if (rows == null || rows[0] == "")
@@ -230,9 +234,22 @@ namespace ModifyProject
                 treeView.Nodes[i].BackColor = Color.DarkViolet;
                 treeView.Nodes[i].ForeColor = Color.White;
                 string[] row = sql.getRows(project, "field", "name = '" + path + "' and class = '" + rows[i] + "'");
-                if (row != null && row[0] != "")
+                int point = path.LastIndexOf(".");
+                string curDir;
+                if (point != -1) {
+                    curDir = path.Substring(point + 1);
+                }
+                else
                 {
-                    int point = row[0].IndexOf(",");
+                    curDir = path;
+                }
+                string dirPath = path.Replace(".", @"\");
+                ManageFile mf = new ManageFile();
+                mf.createFile(project + @"\" + dirPath, rows[i]);
+                if (row != null && row[0] != "" && row[0] != null)
+                {
+                    mf.createField(project + @"\" + dirPath, curDir, rows[i], row[0]);
+                    point = row[0].IndexOf(",");
                     while (point != -1)
                     {
                         string temp = row[0].Substring(0, point);

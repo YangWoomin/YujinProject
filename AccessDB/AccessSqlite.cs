@@ -6,61 +6,30 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data;
 using System.Data.SQLite;
+using AccessFile;
 
 namespace AccessDB
 {
     public class AccessSqlite
     {
-        private string connString;
-        private string strQuery;
-        private SQLiteConnection conn;
-        private SQLiteCommand cmd;
-        private string fileName;
+        private static string strQuery;
+        private static SQLiteConnection conn;
+        private static SQLiteCommand cmd;
         private int check;
 
-        public AccessSqlite(string fileName)
+        public AccessSqlite()
         {
-            this.fileName = fileName;
-            checkFile();
-            if (check != -1)
+            conn = new SQLiteConnection("Data Source = db.db");
+            ManageFile mf = new ManageFile();
+            check = mf.checkDBFile("db.db");
+            if(check != -1)
             {
-                setFile(fileName);
+                conn.Open();
             }
-        }
-        public void setFile(string fileName)
-        {
-            connString = "Data Source=" + fileName;
-            conn = new SQLiteConnection(connString);
-            conn.Open();
         }
         public int getCheck()
         {
             return check;
-        }
-        public void checkFile()
-        {
-            try
-            {
-                FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate);
-                fs.Close();
-                check = 0; // success
-            }/*
-            catch (FileNotFoundException e)
-            {
-                check = -1; // failed
-            }*/
-            catch (FileLoadException e)
-            {
-                check = -2; // success or don't care
-            }
-            catch (IOException e)
-            {
-                check = -3; // success, already used file, normally this case
-            }
-            catch (Exception e)
-            {
-                check = -1; // unknown exception
-            }
         }
         public int getRowNum(string tName, string condition)
         {
@@ -206,6 +175,7 @@ namespace AccessDB
                         strQuery = "drop table " + tName;
                         cmd = new SQLiteCommand(strQuery, conn);
                         cmd.ExecuteNonQuery();
+                        cmd.Dispose();
                         return 0;
                     }
                     i++;
@@ -242,6 +212,7 @@ namespace AccessDB
                 }
                 cmd = new SQLiteCommand(strQuery, conn);
                 cmd.ExecuteNonQuery();
+                cmd.Dispose();
                 return 0;
             }
             catch (Exception e)
@@ -260,30 +231,6 @@ namespace AccessDB
                 if (result != 0)
                     return result;
                 return 0;
-                /*
-                var sqliteAdapter = new SQLiteDataAdapter("select * from " + beforeTName, conn);
-                var cmdBuilder = new SQLiteCommandBuilder(sqliteAdapter);
-                DataTable table = new DataTable(afterTName);
-                sqliteAdapter.AcceptChangesDuringFill = false;
-                sqliteAdapter.Fill(table);
-                sqliteAdapter.Update(table);
-                return 0;
-                
-                string[] rows = getRows(beforeTName, "*", "type = 'table'");
-                int i = 0;
-                while (rows.Length > i)
-                {
-                    if (string.Compare(rows[i], beforeTName) == 0)
-                    {
-                        
-                        strQuery = "update sqlite_master set name = '" + afterTName + "' where name = '" + beforeTName + "'";
-                        cmd = new SQLiteCommand(strQuery, conn);
-                        cmd.ExecuteNonQuery();
-                        return 0;
-                    }
-                    i++;
-                }
-                return -1;*/
             }
             catch (Exception e)
             {
@@ -299,7 +246,7 @@ namespace AccessDB
                 while (point != -1)
                 {
                     int result = 0;
-                    string[] rows = this.getRows(tName, "name", "name = '" + str + "'");
+                    string[] rows = getRows(tName, "name", "name = '" + str + "'");
                     int i = 0;
                     int flag = 0;
                     try

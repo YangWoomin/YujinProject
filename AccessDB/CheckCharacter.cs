@@ -7,9 +7,9 @@ using System.Windows.Forms;
 
 namespace AccessDB
 {
-    public class CheckCharacter
+    public static class CheckCharacter
     {
-        public int checkString(string str)
+        public static int checkString(string str)
         {
             try {
                 if (str[0] >= 48 && str[0] <= 57)
@@ -34,7 +34,7 @@ namespace AccessDB
                 return -2;
             }
         }
-        public int checkNamespace(string namespaceStr)
+        public static int checkNamespace(string namespaceStr)
         {
             try
             {

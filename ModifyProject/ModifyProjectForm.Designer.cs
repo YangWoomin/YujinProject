@@ -192,7 +192,7 @@
             this.groupBox1.Controls.Add(this.nameText);
             this.groupBox1.Location = new System.Drawing.Point(12, 322);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(524, 138);
+            this.groupBox1.Size = new System.Drawing.Size(524, 140);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Workspace";
@@ -255,7 +255,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(548, 469);
+            this.ClientSize = new System.Drawing.Size(548, 472);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "ModifyProjectForm";

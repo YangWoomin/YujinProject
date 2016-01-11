@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AccessDB;
+using AccessFile;
 
 namespace ModifyProject
 {
@@ -18,7 +19,6 @@ namespace ModifyProject
         private string lastClassName;
         private SetNamespaceTreeView namespaceTree;
         private SetClassTreeView classTree;
-        private CheckCharacter checkStr;
 
         public ModifyProjectForm(string fileName, string projectName)
         {
@@ -32,7 +32,6 @@ namespace ModifyProject
             projectText.Enabled = false;
             workAtText.Enabled = false;
             namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
-            checkStr = new CheckCharacter();
         }
         private void setCategoryCombo()
         {
@@ -55,6 +54,7 @@ namespace ModifyProject
             workCombo.Items.Add("Create");
             workCombo.Items.Add("Delete");
             workCombo.Items.Add("Modify");
+            workCombo.SelectedIndex = 0;
         }
         private void categoryCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -277,7 +277,8 @@ namespace ModifyProject
         }
         private void doBtn_Click(object sender, EventArgs e)
         {
-            AccessSqlite sql = new AccessSqlite(fileName);
+            AccessSqlite sql = new AccessSqlite();
+            ManageFile mf = new ManageFile();
             int result = -2;
             if (categoryCombo.SelectedItem == null)
             {
@@ -303,7 +304,7 @@ namespace ModifyProject
                 MessageBox.Show("Input a name in Name Textbox for this work.");
                 return;
             }
-            else if(checkStr.checkNamespace(nameText.Text) != 0)
+            else if(CheckCharacter.checkNamespace(nameText.Text) != 0)
             {
                 return;
             }
@@ -406,6 +407,9 @@ namespace ModifyProject
                     MessageBox.Show("Deleting the Namespace failed.");
                     return;
                 }
+                string path = nameText.Text;
+                path = path.Replace(".", @"\");
+                mf.deleteDirectory(projectName + @"\" + path);
             }
             else if (categoryCombo.SelectedItem.ToString() == "Class" && workCombo.SelectedItem.ToString() == "Delete")
             {
@@ -424,6 +428,8 @@ namespace ModifyProject
                     MessageBox.Show("Deleting the Class failed.");
                     return;
                 }
+                string path = workAtText.Text.Replace(".", @"\");
+                mf.deleteFile(projectName + @"\" + path, nameText.Text);
             }
             else if (categoryCombo.SelectedItem.ToString() == "Field" && workCombo.SelectedItem.ToString() == "Delete")
             {
@@ -478,6 +484,9 @@ namespace ModifyProject
                 result = sql.changeNamespace(projectName, namespaceTree.getPath(), nameText.Text);
                 if (result == 0)
                 {
+                    string oldPath = namespaceTree.getPath().Replace(".", @"\");
+                    string newPath = nameText.Text.Replace(".", @"\");
+                    mf.modifyDirectory(projectName + @"\" + oldPath, projectName + @"\" + newPath);
                     namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
                     namespaceTree.expandNode(nameText.Text);
                     nameText.Text = null;
@@ -508,6 +517,8 @@ namespace ModifyProject
                 result = sql.changeClass(projectName, workAtText.Text, classTree.getClassName(), nameText.Text);
                 if (result == 0)
                 {
+                    string path = workAtText.Text.Replace(".", @"\");
+                    mf.modifyFile(projectName + @"\" + path, classTree.getClassName(), nameText.Text);
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     nameText.Text = null;
                 }

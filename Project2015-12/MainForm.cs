@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AccessDB;
+using AccessFile;
 using CheckProject;
 using ModifyProject;
 
@@ -30,10 +31,6 @@ namespace Project2015_12
         }
         private void selProjBtn_Click(object sender, EventArgs e)
         {
-            if (checkProjectForm.getProjectName() != null)
-            {
-                checkProjectForm.setCurrentProjectText();
-            }
             this.Hide();
             checkProjectForm.ShowDialog();
             this.Show();
@@ -50,7 +47,7 @@ namespace Project2015_12
         {
             try
             {
-                if (checkProjectForm.getCheckApply())
+                if (checkProjectForm.getProjectName() != null)
                 {
                     modifyProjectForm = new ModifyProjectForm(checkProjectForm.getFileName(), checkProjectForm.getProjectName());
                     this.Hide();

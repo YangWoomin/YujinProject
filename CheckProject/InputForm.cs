@@ -17,7 +17,6 @@ namespace CheckProject
         private string fileName;
         private string beforeName;
         private string afterName;
-        private CheckCharacter checkStr;
 
         public InputForm(string fileName, int work, string beforeName)
         {
@@ -36,7 +35,6 @@ namespace CheckProject
             {
                 this.Text = "Modify Project";
             }
-            checkStr = new CheckCharacter();
         }
         public string getAfterName()
         {
@@ -44,6 +42,7 @@ namespace CheckProject
         }
         private void OKBtn_Click(object sender, EventArgs e)
         {
+            AccessSqlite sql = new AccessSqlite();
             if (work == 0)
             {
                 if (inputText.Text == "")
@@ -51,13 +50,12 @@ namespace CheckProject
                     MessageBox.Show("Input a name in Name Textbox for this work.");
                     return;
                 }
-                else if(checkStr.checkString(inputText.Text) != 0)
+                else if(CheckCharacter.checkString(inputText.Text) != 0)
                 {
                     return;
                 }
                 else
                 {
-                    AccessSqlite sql = new AccessSqlite(fileName);
                     int result = sql.createTable(inputText.Text, null);
                     if (result == 0)
                     {
@@ -82,13 +80,12 @@ namespace CheckProject
                     MessageBox.Show("Input a name in Name Textbox for this work.");
                     return;
                 }
-                else if (checkStr.checkString(inputText.Text) != 0)
+                else if (CheckCharacter.checkString(inputText.Text) != 0)
                 {
                     return;
                 }
                 else
                 {
-                    AccessSqlite sql = new AccessSqlite(fileName);
                     int result = sql.changeTable(beforeName, inputText.Text);
                     if (result == 0)
                     {

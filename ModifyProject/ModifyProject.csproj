@@ -96,6 +96,10 @@
       <Project>{3b289a65-d1f0-4e43-a4be-863fb159c96e}</Project>
       <Name>AccessDB</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AccessFile\AccessFile.csproj">
+      <Project>{2a68d1c1-8e8d-49e9-baca-e6a18c5a2762}</Project>
+      <Name>AccessFile</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
