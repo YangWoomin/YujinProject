@@ -13,7 +13,9 @@ namespace AccessFile
         {
             try
             {
-                File.Create(dbFileName);
+                FileStream fs = new FileStream(dbFileName, FileMode.OpenOrCreate);
+                fs.Close();
+                //File.Create(dbFileName);
                 return 0; // success
             }
             catch (FileLoadException e)
