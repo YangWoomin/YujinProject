@@ -27,41 +27,20 @@ namespace AccessDB
                 conn.Open();
             }
         }
+        private void synchronizeDirectory()
+        {
+            ManageFile mf = new ManageFile();
+            
+        }
         public int getCheck()
         {
             return check;
-        }
-        public int getRowNum(string tName, string condition)
-        {
-            try
-            {
-                int rowNum;
-                strQuery = "select count(*) from " + tName;
-                if (condition != null)
-                {
-                    strQuery = strQuery + " where " + condition;
-                }
-                cmd = new SQLiteCommand(strQuery, conn);
-                SQLiteDataReader reader = cmd.ExecuteReader();
-                cmd.Dispose();
-                reader.Read();
-                rowNum = Convert.ToInt16(reader["count(*)"]);
-                reader.Close();
-                return rowNum;
-            }
-            catch (Exception e)
-            {
-                return -1;
-            }
         }
         public string[] getRows(string tName, string column, string condition)
         {
             try
             {
-                int rowNum = getRowNum(tName, condition);
-                if (rowNum < 1)
-                    return null;
-                strQuery = "select * from " + tName;
+                strQuery = "select " + column +" from " + tName;
                 if (condition != null)
                 {
                     strQuery = strQuery + " where " + condition;
@@ -70,11 +49,43 @@ namespace AccessDB
                 cmd = new SQLiteCommand(strQuery, conn);
                 SQLiteDataReader reader = cmd.ExecuteReader();
                 cmd.Dispose();
-                string[] rows = new string[rowNum];
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+                string[] rows = new string[dt.Rows.Count];
                 int i = 0;
-                while (reader.Read())
+                while (rows.Length > i)
                 {
-                    rows[i] = reader[column].ToString();
+                    rows[i] = dt.Rows[i][0].ToString();
+                    i++;
+                }
+                reader.Close();
+                return rows;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+        public string[] getRowsDistinct(string tName, string column, string condition)
+        {
+            try
+            {
+                strQuery = "select distinct " + column + " from " + tName;
+                if (condition != null)
+                {
+                    strQuery = strQuery + " where " + condition;
+                }
+                strQuery = strQuery + " order by " + column + " asc";
+                cmd = new SQLiteCommand(strQuery, conn);
+                SQLiteDataReader reader = cmd.ExecuteReader();
+                cmd.Dispose();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+                string[] rows = new string[dt.Rows.Count];
+                int i = 0;
+                while (rows.Length > i)
+                {
+                    rows[i] = dt.Rows[i][0].ToString();
                     i++;
                 }
                 reader.Close();
@@ -536,23 +547,19 @@ namespace AccessDB
                 return -1;
             }
         }
-        public int changeField(string tName, string path, string className, string fieldName, string newFieldName, string newFieldType)
+        public int changeField(string tName, string path, string className, string oldFieldName, string newFieldName, string fieldType)
         {
-            int point = fieldName.IndexOf("(");
-            fieldName = fieldName.Substring(0, point);
-            if(fieldName == newFieldName + "-" + newFieldType)
-            {
-                return -3;
-            }
+            int point = oldFieldName.IndexOf("(");
+            oldFieldName = oldFieldName.Substring(0, point);
             int result = -2;
             try
             {
-                result = deleteField(tName, path, className, fieldName);
+                result = deleteField(tName, path, className, oldFieldName);
                 if(result != 0)
                 {
                     return result;
                 }
-                result = insertField(tName, path, className, newFieldName, newFieldType);
+                result = insertField(tName, path, className, newFieldName, fieldType);
                 return result;
             }
             catch(Exception e)

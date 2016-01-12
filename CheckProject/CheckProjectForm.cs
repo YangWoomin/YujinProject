@@ -29,6 +29,10 @@ namespace CheckProject
             {
                 resetList();
                 projectName = mf.getCurrentProject("check.txt");
+                if(projectName != null)
+                {
+                    curProjText.Text = projectName;
+                }
             }
         }
         private void resetList()

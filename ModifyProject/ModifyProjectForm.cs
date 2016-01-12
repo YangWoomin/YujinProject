@@ -32,6 +32,98 @@ namespace ModifyProject
             projectText.Enabled = false;
             workAtText.Enabled = false;
             namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
+            setDirectory();
+            setClassFile();
+        }
+        private void setDirectory()
+        {
+            AccessSqlite sql = new AccessSqlite();
+            ManageFile mf = new ManageFile();
+            string[] rows = sql.getRows(projectName, "name", null);
+            int i = 0;
+            try
+            {
+                while(rows.Length > i)
+                {
+                    string row = rows[i].Replace(".", @"\");
+                    mf.createDirectory(projectName + @"\" + row);
+                    i++;
+                }
+            }
+            catch(Exception e)
+            {
+            }
+        }
+        private void setClassFile()
+        {
+            AccessSqlite sql = new AccessSqlite();
+            ManageFile mf = new ManageFile();
+            string path;
+            int point;
+            string[] rows = sql.getRowsDistinct(projectName, "name", null);
+            int i = 0;
+            int j = 0;
+            try
+            {
+                while(rows.Length > i)
+                {
+                    path = rows[i].Replace(".", @"\");
+                    string[] crows = sql.getRows(projectName, "class", "name = '" + rows[i] + "'");
+                    j = 0;
+                    try
+                    {
+                        while (crows.Length > j)
+                        {
+                            if(crows[j] == "")
+                            {
+                                j++;
+                                continue;
+                            }
+                            if(mf.checkFile(path, crows[j]))
+                            {
+                                // field check
+                                j++;
+                                continue;
+                            }
+                            string curDir;
+                            point = rows[i].LastIndexOf(".");
+                            if(point != -1)
+                            {
+                                curDir = rows[i].Substring(point + 1);
+                            }
+                            else
+                            {
+                                curDir = rows[i];
+                            }
+                            int result = mf.createFile(projectName + @"\" + path, curDir, crows[j]);
+                            if (result == 0)
+                            {
+                                try
+                                {
+                                string[] frow = sql.getRows(projectName, "field", "name = '" + rows[i] + "' and class = '" + crows[j] + "'");
+                                    if(frow[0] == "")
+                                    {
+                                        j++;
+                                        continue;
+                                    }
+                                    mf.createField(projectName + @"\" + path, curDir, crows[j], frow[0]);
+                                }
+                                catch (Exception e)
+                                {
+                                }
+                            }
+                            j++;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                    i++;
+                }
+            }
+            catch(Exception e)
+            {
+            }
         }
         private void setCategoryCombo()
         {
@@ -280,6 +372,7 @@ namespace ModifyProject
             AccessSqlite sql = new AccessSqlite();
             ManageFile mf = new ManageFile();
             int result = -2;
+            string path;
             if (categoryCombo.SelectedItem == null)
             {
                 MessageBox.Show("Select a Category for this work.");
@@ -320,6 +413,8 @@ namespace ModifyProject
                 {
                     namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
                     namespaceTree.expandNode(nameText.Text);
+                    path = nameText.Text.Replace(".", @"\");
+                    mf.createDirectory(projectName + @"\" + path);
                 }
                 else if (result == -1)
                 {
@@ -337,6 +432,18 @@ namespace ModifyProject
                 result = sql.insertClass(projectName, namespaceTree.getPath(), nameText.Text);
                 if (result == 0)
                 {
+                    path = namespaceTree.getPath().Replace(".", @"\");
+                    int point = namespaceTree.getPath().LastIndexOf(".");
+                    string curDir;
+                    if (point != -1)
+                    {
+                        curDir = namespaceTree.getPath().Substring(point + 1);
+                    }
+                    else
+                    {
+                        curDir = namespaceTree.getPath();
+                    }
+                    mf.createFile(projectName + @"\" + path, curDir, nameText.Text);
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                 }
                 else if (result == -1)
@@ -369,6 +476,18 @@ namespace ModifyProject
                 result = sql.insertField(projectName, namespaceTree.getPath(), lastClassName, nameText.Text, type);
                 if (result == 0)
                 {
+                    path = namespaceTree.getPath().Replace(".", @"\");
+                    int point = namespaceTree.getPath().LastIndexOf(".");
+                    string curDir;
+                    if (point != -1)
+                    {
+                        curDir = namespaceTree.getPath().Substring(point + 1);
+                    }
+                    else
+                    {
+                        curDir = namespaceTree.getPath();
+                    }
+                    mf.addField(projectName + @"\" + path, lastClassName, nameText.Text, type);
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     classTree.expandNode(lastClassName);
                 }
@@ -396,6 +515,9 @@ namespace ModifyProject
                 {
                     namespaceTree = new SetNamespaceTreeView(namespaceTreeView, fileName, projectName);
                     namespaceTree.expandNode(nameText.Text);
+                    path = nameText.Text;
+                    path = path.Replace(".", @"\");
+                    mf.deleteDirectory(projectName + @"\" + path);
                 }
                 else if (result == -1)
                 {
@@ -407,9 +529,6 @@ namespace ModifyProject
                     MessageBox.Show("Deleting the Namespace failed.");
                     return;
                 }
-                string path = nameText.Text;
-                path = path.Replace(".", @"\");
-                mf.deleteDirectory(projectName + @"\" + path);
             }
             else if (categoryCombo.SelectedItem.ToString() == "Class" && workCombo.SelectedItem.ToString() == "Delete")
             {
@@ -417,6 +536,8 @@ namespace ModifyProject
                 if (result == 0)
                 {
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
+                    path = namespaceTree.getPath().Replace(".", @"\");
+                    mf.deleteFile(projectName + @"\" + path, nameText.Text);
                 }
                 else if (result == -1)
                 {
@@ -428,8 +549,6 @@ namespace ModifyProject
                     MessageBox.Show("Deleting the Class failed.");
                     return;
                 }
-                string path = workAtText.Text.Replace(".", @"\");
-                mf.deleteFile(projectName + @"\" + path, nameText.Text);
             }
             else if (categoryCombo.SelectedItem.ToString() == "Field" && workCombo.SelectedItem.ToString() == "Delete")
             {
@@ -440,6 +559,18 @@ namespace ModifyProject
                 result = sql.deleteField(projectName, namespaceTree.getPath(), lastClassName, nameText.Text);
                 if (result == 0)
                 {
+                    path = namespaceTree.getPath().Replace(".", @"\");
+                    int point = namespaceTree.getPath().LastIndexOf(".");
+                    string curDir;
+                    if (point != -1)
+                    {
+                        curDir = namespaceTree.getPath().Substring(point + 1);
+                    }
+                    else
+                    {
+                        curDir = namespaceTree.getPath();
+                    }
+                    mf.deleteField(projectName + @"\" + path, lastClassName, nameText.Text);
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     classTree.expandNode(lastClassName);
                 }
@@ -517,7 +648,7 @@ namespace ModifyProject
                 result = sql.changeClass(projectName, workAtText.Text, classTree.getClassName(), nameText.Text);
                 if (result == 0)
                 {
-                    string path = workAtText.Text.Replace(".", @"\");
+                    path = workAtText.Text.Replace(".", @"\");
                     mf.modifyFile(projectName + @"\" + path, classTree.getClassName(), nameText.Text);
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     nameText.Text = null;
@@ -544,11 +675,6 @@ namespace ModifyProject
                     MessageBox.Show("Click a Field in View for this work.");
                     return;
                 }
-                else if (classTree.getFieldName() == nameText.Text)
-                {
-                    MessageBox.Show("Input changed name in Name Textbox for this work.");
-                    return;
-                }
                 else if (typeCombo.SelectedItem == null)
                 {
                     MessageBox.Show("Select a field type in Type for this work.");
@@ -557,6 +683,18 @@ namespace ModifyProject
                 result = sql.changeField(projectName, namespaceTree.getPath(), classTree.getClassName(), classTree.getFieldName(), nameText.Text, typeCombo.SelectedItem.ToString());
                 if (result == 0)
                 {
+                    path = namespaceTree.getPath().Replace(".", @"\");
+                    int point = namespaceTree.getPath().LastIndexOf(".");
+                    string curDir;
+                    if (point != -1)
+                    {
+                        curDir = namespaceTree.getPath().Substring(point + 1);
+                    }
+                    else
+                    {
+                        curDir = namespaceTree.getPath();
+                    }
+                    mf.modifyField(projectName + @"\" + path, classTree.getClassName(), classTree.getFieldName(), nameText.Text, typeCombo.SelectedItem.ToString());
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     classTree.expandNode(lastClassName);
                     nameText.Text = null;

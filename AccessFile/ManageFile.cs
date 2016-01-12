@@ -9,15 +9,11 @@ namespace AccessFile
 {
     public class ManageFile
     {
-        private FileStream fs;
-        private StreamReader sr;
-        private StreamWriter sw;
         public int checkDBFile(string dbFileName)
         {
             try
             {
-                fs = new FileStream(dbFileName, FileMode.OpenOrCreate);
-                fs.Close();
+                File.Create(dbFileName);
                 return 0; // success
             }
             catch (FileLoadException e)
@@ -37,12 +33,8 @@ namespace AccessFile
         {
             try
             {
-                fs = new FileStream(fileName, FileMode.OpenOrCreate);
-                sr = new StreamReader(fs);
-                string projectName = sr.ReadLine();
-                sr.Close();
-                fs.Close();
-                return projectName;
+                string[] lines = File.ReadAllLines(fileName);
+                return lines[0];
             }
             catch(Exception e)
             {
@@ -53,11 +45,9 @@ namespace AccessFile
         {
             try
             {
-                fs = new FileStream(fileName, FileMode.Create);
-                sw = new StreamWriter(fs);
-                sw.WriteLine(projectName);
-                sw.Close();
-                fs.Close();
+                string[] lines = new string[1];
+                lines[0] = projectName;
+                File.WriteAllLines(fileName, lines);
             }
             catch(Exception e)
             {
@@ -102,12 +92,20 @@ namespace AccessFile
                 return -2;
             }
         }
-        public int createFile(string path, string fileName)
+        public int createFile(string path, string curDir, string fileName)
         {
             try
             {
-                fs = new FileStream(path + @"\" + fileName + ".cs", FileMode.CreateNew);
-                return 0;
+                if (fileName != null && fileName != "")
+                {
+                    string[] lines = new string[3];
+                    lines[0] = "namespace " + curDir + "\n{";
+                    lines[1] = "public class " + fileName + "\n{";
+                    lines[2] = "}\n}";
+                    File.WriteAllLines(path + @"\" + fileName + ".cs", lines);
+                    return 0;
+                }
+                return -1;
             }
             catch(IOException e)
             {
@@ -142,33 +140,119 @@ namespace AccessFile
                 return -2;
             }
         }
+        public bool checkFile(string path, string fileName)
+        {
+            try
+            {
+                string[] files = Directory.GetFiles(path);
+                int i = 0;
+                while(files.Length > i)
+                {
+                    if(fileName + ".cs" == files[i])
+                    {
+                        return true;
+                    }
+                    i++;
+                }
+                return false;
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+        }
         public int createField(string path, string currentDir, string fileName, string fields)
         {
             try
             {
-                fs = new FileStream(path + @"\" + fileName + ".cs", FileMode.OpenOrCreate);
-                sw = new StreamWriter(fs, Encoding.UTF8);
-                sw.WriteLine("namespace " + currentDir + "\n{");
-                sw.WriteLine("public class " + fileName + "\n{");
                 int point = fields.IndexOf("-");
                 int point2 = fields.IndexOf(",");
                 string name;
                 string type;
-                while(point != -1)
+                while (point != -1)
                 {
                     name = fields.Substring(0, point);
-                    type = fields.Substring(point+1, point2 - point - 1);
-                    sw.WriteLine("private " + type + " " + name + ";");
-                    sw.WriteLine("public " + type + " getset" + name + "\n{");
-                    sw.WriteLine("get { return " + name + "; }");
-                    sw.WriteLine("set { " + name + " = " + "getset" + name + "; }\n}");
+                    type = fields.Substring(point + 1, point2 - point - 1);
+                    addField(path, fileName, name, type);
                     fields = fields.Substring(point2 + 1);
                     point = fields.IndexOf("-");
                     point2 = fields.IndexOf(",");
                 }
-                sw.WriteLine("}\n}");
-                sw.Close();
-                fs.Close();
+                return 0;
+            }
+            catch (Exception e)
+            {
+                return -2;
+            }
+        }
+        public int addField(string path, string fileName, string fieldName, string type)
+        {
+            try
+            {
+                string[] lines = File.ReadAllLines(path + @"\" + fileName + ".cs");
+                lines[lines.Length - 2] = "private " + type + " " + fieldName + ";\n" + "public " + type + " getset" + fieldName + "\n{\nget { return " + fieldName + "; }\nset { " + fieldName + " = getset" + fieldName + "; }\n}\n}";
+                File.WriteAllLines(path + @"\" + fileName + ".cs", lines);
+                return 0;
+            }
+            catch(Exception e)
+            {
+                return -2;
+            }
+        }
+        public int deleteField(string path, string fileName, string fieldName)
+        {
+            try
+            {
+                string[] lines = File.ReadAllLines(path + @"\" + fileName + ".cs");
+                string[] newLines = new string[lines.Length - 6];
+                int i = 0;
+                int j = 0;
+                int point;
+                while(lines.Length > i)
+                {
+                    point = lines[i].IndexOf(fieldName);
+                    if(point == -1)
+                    {
+                        newLines[j] = lines[i];
+                    }
+                    else
+                    {
+                        i = i + 6;
+                        continue;
+                    }
+                    j++;
+                    i++;
+                }
+                File.WriteAllLines(path + @"\" + fileName + ".cs", newLines);
+                return 0;
+            }
+            catch(Exception e)
+            {
+                return -2;
+            }
+        }
+        public int modifyField(string path, string fileName, string oldFieldName, string newFieldName, string fieldType)
+        {
+            int result = -2;
+            try
+            {
+                result = deleteField(path, fileName, oldFieldName);
+                if(result != 0)
+                {
+                    return -2;
+                }
+                result = addField(path, fileName, newFieldName, fieldType);
+                return result;
+            }
+            catch(Exception e)
+            {
+                return -2;
+            }
+        }
+        public int checkField(string path, string fileName, string fields)
+        {
+            try
+            {
                 return 0;
             }
             catch(Exception e)
