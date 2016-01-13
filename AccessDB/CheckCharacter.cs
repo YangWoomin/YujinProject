@@ -17,6 +17,14 @@ namespace AccessDB
                     MessageBox.Show("A number is not available for first character.");
                     return -3;
                 }
+                //if(flag == 0)
+                //{
+
+                //}
+                //else
+                //{
+
+                //}
                 int i = 0;
                 while (str.Length > i)
                 {

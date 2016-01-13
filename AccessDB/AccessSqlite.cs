@@ -215,7 +215,7 @@ namespace AccessDB
                 }
                 if (beforeTName == null)
                 {
-                    strQuery = "create table " + tName + "(name varchar(50) not null, class varchar(50), field varchar(50))";
+                    strQuery = "create table " + tName + "(name varchar(50) not null, class varchar(50), field varchar(500))";
                 }
                 else
                 {

@@ -694,7 +694,8 @@ namespace ModifyProject
                     {
                         curDir = namespaceTree.getPath();
                     }
-                    mf.modifyField(projectName + @"\" + path, classTree.getClassName(), classTree.getFieldName(), nameText.Text, typeCombo.SelectedItem.ToString());
+                    point = classTree.getFieldName().IndexOf("(");
+                    mf.modifyField(projectName + @"\" + path, classTree.getClassName(), classTree.getFieldName().Substring(0, point), nameText.Text, typeCombo.SelectedItem.ToString());
                     classTree = new SetClassTreeView(classTreeView, fileName, projectName, namespaceTree.getPath());
                     classTree.expandNode(lastClassName);
                     nameText.Text = null;

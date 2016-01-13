@@ -18,6 +18,12 @@ namespace ModifyProject
         private string fileName;
         private string project;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="treeView"></param>
+        /// <param name="fileName"></param>
+        /// <param name="project"></param>
         public SetNamespaceTreeView(TreeView treeView, string fileName, string project)
         {
             nodeList = null;
@@ -241,7 +247,7 @@ namespace ModifyProject
                         {
                             string temp = row[0].Substring(0, point);
                             int point2 = temp.IndexOf("-");
-                            temp = temp.Substring(0, point2) + "(" + temp.Substring(point2 + 1) + ")";
+                            temp = temp.Substring(0, point2) + "(" + temp.Substring(point2 + 1, point - point2 - 1) + ")";
                             treeView.Nodes[i].Nodes.Add(temp);
                             row[0] = row[0].Substring(point + 1);
                             point = row[0].IndexOf(",");

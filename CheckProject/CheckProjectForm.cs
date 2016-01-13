@@ -24,8 +24,12 @@ namespace CheckProject
             curProjText.Enabled = false;
             fileName = "db.db";
             ManageFile mf = new ManageFile();
-            int check = mf.checkDBFile(fileName);
-            if (check != -1)
+            int result = mf.checkDBFile(fileName);
+            if (result == -4)
+            {
+                mf.setCurrentProject("check.txt", null);
+            }
+            else if (result != -1)
             {
                 resetList();
                 projectName = mf.getCurrentProject("check.txt");
@@ -33,11 +37,12 @@ namespace CheckProject
                 {
                     curProjText.Text = projectName;
                 }
-            }
+            }            
         }
         private void resetList()
         {
             projectList.Items.Clear();
+            ManageFile mf = new ManageFile();
             AccessSqlite sql = new AccessSqlite();
             string[] rows = sql.getRows("sqlite_master", "name", "type = 'table'");
             if (rows == null)
@@ -46,6 +51,7 @@ namespace CheckProject
             while (rows.Length > i)
             {
                 projectList.Items.Add(rows[i]);
+                mf.createDirectory(rows[i].Replace(".", @"\"));
                 i++;
             }
         }
@@ -87,15 +93,15 @@ namespace CheckProject
             }
             if (flag == 0)
             {
+                ManageFile mf = new ManageFile();
                 if (beforeName == projectName)
                 {
                     projectName = inputForm.getAfterName();
                     curProjText.Text = projectName;
-                    ManageFile mf = new ManageFile();
                     mf.setCurrentProject("check.txt", projectName);
                 }
+                mf.modifyDirectory(beforeName, inputForm.getAfterName());
             }
-
         }
         private void deleteBtn_Click(object sender, EventArgs e)
         {
@@ -108,13 +114,14 @@ namespace CheckProject
             int result = sql.deleteTable(projectList.SelectedItem.ToString());
             if (result == 0)
             {
-                if (projectName != null && projectList.SelectedItem.ToString() == projectName)
+                ManageFile mf = new ManageFile();
+                if (projectList.SelectedItem.ToString() == projectName)
                 {
                     projectName = null;
                     curProjText.Text = null;
-                    ManageFile mf = new ManageFile();
                     mf.setCurrentProject("check.txt", null);
                 }
+                mf.deleteDirectory(projectList.SelectedItem.ToString());
                 resetList();
                 MessageBox.Show("Succeed in deleting the project.");
             }

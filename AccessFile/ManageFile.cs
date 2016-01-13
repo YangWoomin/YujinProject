@@ -13,10 +13,16 @@ namespace AccessFile
         {
             try
             {
-                FileStream fs = new FileStream(dbFileName, FileMode.OpenOrCreate);
+                FileStream fs = new FileStream(dbFileName, FileMode.Open);
                 fs.Close();
                 //File.Create(dbFileName);
                 return 0; // success
+            }
+            catch(FileNotFoundException e)
+            {
+                FileStream fs = new FileStream(dbFileName, FileMode.Create);
+                fs.Close();
+                return -4;
             }
             catch (FileLoadException e)
             {
@@ -86,7 +92,29 @@ namespace AccessFile
         {
             try
             {
-                Directory.Move(path, newPath);
+                DirectoryInfo Dir = new DirectoryInfo(path);
+                DirectoryInfo CDir = new DirectoryInfo(newPath);
+                if (CDir.Exists)
+                {
+                    Directory.Delete(newPath, true);
+                }
+                if (Dir.Exists)
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            Dir.MoveTo(newPath);
+                            break;
+                        }
+                        catch(IOException e)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Close current folder's window");
+                            continue;
+                        }
+                    }
+                    Dir = new DirectoryInfo(newPath);
+                }
                 return 0;
             }
             catch(Exception e)
