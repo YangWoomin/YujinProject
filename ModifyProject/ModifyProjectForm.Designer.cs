@@ -39,6 +39,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.generateBtn = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.DoBtn = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -144,6 +145,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.generateBtn);
             this.groupBox2.Controls.Add(this.projectText);
             this.groupBox2.Controls.Add(this.classTreeView);
             this.groupBox2.Controls.Add(this.label5);
@@ -156,6 +158,16 @@
             this.groupBox2.TabIndex = 9;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "View";
+            // 
+            // generateBtn
+            // 
+            this.generateBtn.Location = new System.Drawing.Point(428, 24);
+            this.generateBtn.Name = "generateBtn";
+            this.generateBtn.Size = new System.Drawing.Size(75, 23);
+            this.generateBtn.TabIndex = 6;
+            this.generateBtn.Text = "Generate";
+            this.generateBtn.UseVisualStyleBackColor = true;
+            this.generateBtn.Click += new System.EventHandler(this.generateBtn_Click);
             // 
             // label1
             // 
@@ -290,6 +302,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox workCombo;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button generateBtn;
     }
 }
 

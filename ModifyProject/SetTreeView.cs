@@ -33,34 +33,30 @@ namespace ModifyProject
             this.project = project;
             renewTreeView();
         }
-        private void addNode(string row)
+        private int addNode(string row)
         {
             try
             {
-                int flag = 0;
                 tempNode = nodeList;
                 while (tempNode.getNext() != null)
                 {
-                    if (row == tempNode.getPath())
+                    if (row.ToLower() == tempNode.getPath().ToLower())
                     {
-                        flag = 1;
-                        break;
+                        return -1;
                     }
                     tempNode = tempNode.getNext();
                 }
-                if (row == tempNode.getPath())
+                if (row.ToLower() == tempNode.getPath().ToLower())
                 {
-                    flag = 1;
+                    return -1;
                 }
-                if (flag == 0)
-                {
-                    Node newNode = new Node(row);
-                    tempNode.setNext(newNode);
-                }
+                Node newNode = new Node(row);
+                tempNode.setNext(newNode);
+                return 0;
             }
             catch (Exception e)
             {
-                return;
+                return -2;
             }
         }
         private void renewTreeView()
@@ -68,9 +64,12 @@ namespace ModifyProject
             treeView.Nodes.Clear();
             AccessSqlite sql = new AccessSqlite();
             string[] rows = sql.getRows(project, "name", null);
+            int result;
             int i = 0;
             if (rows == null)
+            {
                 return;
+            }
             while (rows.Length > i)
             {
                 if (nodeList == null)
@@ -85,7 +84,11 @@ namespace ModifyProject
                 while (point != -1)
                 {
                     rows[i] = rows[i].Substring(0, point);
-                    addNode(rows[i]);
+                    result = addNode(rows[i]);
+                    if(result != 0)
+                    {
+                        break;
+                    }
                     point = rows[i].LastIndexOf(".");
                 }
                 i++;
@@ -107,7 +110,7 @@ namespace ModifyProject
                 Node tempNode2 = nodeList;
                 while (tempNode2 != null)
                 {
-                    if (string.Compare(tempNode2.getPath(), pPath) == 0)
+                    if (tempNode2.getPath().ToLower() == pPath.ToLower())
                     {
                         tempNode2.getNode().Nodes.Add(tempNode.getNode());
                         break;
@@ -120,7 +123,7 @@ namespace ModifyProject
             tempNode = nodeList;
             while (tempNode != null)
             {
-                if (string.Compare(tempNode.getNode().Text, tempNode.getPath()) == 0)
+                if (tempNode.getNode().Text.ToLower() == tempNode.getPath().ToLower())
                 {
                     treeView.Nodes.Add(tempNode.getNode());
                 }
@@ -159,7 +162,7 @@ namespace ModifyProject
                 while(tempNode.Parent != null)
                 {
                     tempNode = tempNode.Parent;
-                    path = path + tempNode.Text;
+                    path = tempNode.Text + "." + path;
                 }
                 return path;
             }
@@ -181,14 +184,14 @@ namespace ModifyProject
             }
             tempNode = nodeList;
             TreeNode theNode = null;
-            if (path == tempNode.getPath())
+            if (path.ToLower() == tempNode.getPath().ToLower())
             {
                 theNode = tempNode.getNode();
             }
             while (tempNode.getNext() != null)
             {
                 tempNode = tempNode.getNext();
-                if (path == tempNode.getPath())
+                if (path.ToLower() == tempNode.getPath().ToLower())
                 {
                     theNode = tempNode.getNode();
                 }

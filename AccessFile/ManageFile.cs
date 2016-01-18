@@ -9,6 +9,11 @@ namespace AccessFile
 {
     public class ManageFile
     {
+        /// <summary>
+        /// DB file 검사
+        /// </summary>
+        /// <param name="dbFileName"></param> DB file 이름
+        /// <returns></returns>
         public int checkDBFile(string dbFileName)
         {
             try
@@ -37,6 +42,11 @@ namespace AccessFile
                 return -1; // unknown exception
             }
         }
+        /// <summary>
+        /// 최근의 project를 txt file에서 읽어옴
+        /// </summary>
+        /// <param name="fileName"></param> txt file 이름
+        /// <returns></returns> project명 : 성공, null : 실패
         public string getCurrentProject(string fileName)
         {
             try
@@ -49,6 +59,11 @@ namespace AccessFile
                 return null;
             }
         }
+        /// <summary>
+        /// 현재 적용된 project를 txt file에 저장
+        /// </summary>
+        /// <param name="fileName"></param> txt file 이름
+        /// <param name="projectName"></param> 현재 적용된 project
         public void setCurrentProject(string fileName, string projectName)
         {
             try
@@ -61,9 +76,15 @@ namespace AccessFile
             {
             }
         }
+        /// <summary>
+        /// directory 생성
+        /// </summary>
+        /// <param name="path"></param> namespace
+        /// <returns></returns> 0 : 성공, -2 : unknown
         public int createDirectory(string path)
         {
-            try {
+            try
+            {
                 Directory.CreateDirectory(path);
                 return 0;
             }
@@ -72,6 +93,11 @@ namespace AccessFile
                 return -2;
             }
         }
+        /// <summary>
+        /// directory 삭제
+        /// </summary>
+        /// <param name="path"></param> namespace
+        /// <returns></returns> 0 : 성공, -1 : 실패, -2 : unknown
         public int deleteDirectory(string path)
         {
             try
@@ -88,6 +114,12 @@ namespace AccessFile
                 return -2;
             }
         }
+        /// <summary>
+        /// directory 변경(not used)
+        /// </summary>
+        /// <param name="path"></param> namespace
+        /// <param name="newPath"></param> 변경할 namepsace
+        /// <returns></returns> 0 : 성공, -2 : unknown
         public int modifyDirectory(string path, string newPath)
         {
             try
@@ -107,8 +139,10 @@ namespace AccessFile
                             Dir.MoveTo(newPath);
                             break;
                         }
+                        // 변경할 폴더의 하위폴더를 열고 있을 경우 예외발생
                         catch(IOException e)
                         {
+                            // 폴더 창을 닫아야 함
                             System.Windows.Forms.MessageBox.Show("Close current folder's window");
                             continue;
                         }
@@ -122,20 +156,55 @@ namespace AccessFile
                 return -2;
             }
         }
-        public int createFile(string path, string curDir, string fileName)
+        /// <summary>
+        /// cs file 생성
+        /// </summary>
+        /// <param name="path"></param> namespace(directory)
+        /// <param name="fileName"></param> file명
+        /// <returns></returns> 0 : 성공, -1 : 실패, -2 : unknown
+        public int createFile(string path, string fileName, string fields)
         {
             try
             {
-                if (fileName != null && fileName != "")
+                int point;
+                int point2;
+                string name;
+                string type;
+                string methods = "";
+                string field;
+                string lines = string.Format(
+@"namespace {0} 
+{{
+    public class {1} 
+    {{
+        "
+, path, fileName);
+                if(fields != null && fields != "")
                 {
-                    string[] lines = new string[3];
-                    lines[0] = "namespace " + curDir + "\n{";
-                    lines[1] = "public class " + fileName + "\n{";
-                    lines[2] = "}\n}";
-                    File.WriteAllLines(path + @"\" + fileName + ".cs", lines);
-                    return 0;
+                    point = fields.IndexOf("-");
+                    point2 = fields.IndexOf(",");
+                    while(point != -1)
+                    {
+                        name = fields.Substring(0, point);
+                        type = fields.Substring(point + 1, point2 - point - 1);
+                        lines += "private " + type + " " + name + ";\n\t\t";
+                        field = name[0].ToString().ToUpper();
+                        if(name.Length > 1)
+                        {
+                            field += name.Substring(1);
+                        }
+                        methods += "\n\t\tpublic " + type + " getset" + field + 
+                            "\n\t\t{\n\t\t\tget { return " + name + 
+                            "; }\n\t\t\tset { " + name + " = value; }\n\t\t}";
+                        fields = fields.Substring(point2 + 1);
+                        point = fields.IndexOf("-");
+                        point2 = fields.IndexOf(",");
+                    }
                 }
-                return -1;
+                lines += methods;
+                lines += "\n\t}\n}";
+                File.WriteAllText(path.Replace(".", @"\") + @"\" + fileName + ".cs", lines);
+                return 0;
             }
             catch(IOException e)
             {
@@ -146,6 +215,12 @@ namespace AccessFile
                 return -2;
             }
         }
+        /// <summary>
+        /// cs file 삭제(not used)
+        /// </summary>
+        /// <param name="path"></param> namespace(directory)
+        /// <param name="fileName"></param> file명
+        /// <returns></returns> 0 : 성공, -2 : unknown
         public int deleteFile(string path, string fileName)
         {
             try
@@ -158,6 +233,13 @@ namespace AccessFile
                 return -2;
             }
         }
+        /// <summary>
+        /// cs file 변경 (not used)
+        /// </summary>
+        /// <param name="path"></param> namespace(directory)
+        /// <param name="fileName"></param> file명
+        /// <param name="newFileName"></param> 변경할 file명
+        /// <returns></returns> 0 : 성공, -2 : unknown
         public int modifyFile(string path, string fileName, string newFileName)
         {
             try
@@ -170,6 +252,12 @@ namespace AccessFile
                 return -2;
             }
         }
+        /// <summary>
+        /// cs file 존재여부 검사 (not usded)
+        /// </summary>
+        /// <param name="path"></param> namespace(directory)
+        /// <param name="fileName"></param> file명
+        /// <returns></returns> 존재여부
         public bool checkFile(string path, string fileName)
         {
             try
@@ -189,105 +277,6 @@ namespace AccessFile
             catch(Exception e)
             {
                 return false;
-            }
-        }
-        public int createField(string path, string currentDir, string fileName, string fields)
-        {
-            try
-            {
-                int point = fields.IndexOf("-");
-                int point2 = fields.IndexOf(",");
-                string name;
-                string type;
-                while (point != -1)
-                {
-                    name = fields.Substring(0, point);
-                    type = fields.Substring(point + 1, point2 - point - 1);
-                    addField(path, fileName, name, type);
-                    fields = fields.Substring(point2 + 1);
-                    point = fields.IndexOf("-");
-                    point2 = fields.IndexOf(",");
-                }
-                return 0;
-            }
-            catch (Exception e)
-            {
-                return -2;
-            }
-        }
-        public int addField(string path, string fileName, string fieldName, string type)
-        {
-            try
-            {
-                string[] lines = File.ReadAllLines(path + @"\" + fileName + ".cs");
-                lines[lines.Length - 2] = "private " + type + " " + fieldName + ";\n" + "public " + type + " getset" + fieldName + "\n{\nget { return " + fieldName + "; }\nset { " + fieldName + " = getset" + fieldName + "; }\n}\n}";
-                File.WriteAllLines(path + @"\" + fileName + ".cs", lines);
-                return 0;
-            }
-            catch(Exception e)
-            {
-                return -2;
-            }
-        }
-        public int deleteField(string path, string fileName, string fieldName)
-        {
-            try
-            {
-                string[] lines = File.ReadAllLines(path + @"\" + fileName + ".cs");
-                string[] newLines = new string[lines.Length - 6];
-                int i = 0;
-                int j = 0;
-                int point;
-                while(lines.Length > i)
-                {
-                    point = lines[i].IndexOf(fieldName);
-                    if(point == -1)
-                    {
-                        newLines[j] = lines[i];
-                    }
-                    else
-                    {
-                        i = i + 6;
-                        continue;
-                    }
-                    j++;
-                    i++;
-                }
-                File.WriteAllLines(path + @"\" + fileName + ".cs", newLines);
-                return 0;
-            }
-            catch(Exception e)
-            {
-                return -2;
-            }
-        }
-        public int modifyField(string path, string fileName, string oldFieldName, string newFieldName, string fieldType)
-        {
-            int result = -2;
-            try
-            {
-                result = deleteField(path, fileName, oldFieldName);
-                if(result != 0)
-                {
-                    return -2;
-                }
-                result = addField(path, fileName, newFieldName, fieldType);
-                return result;
-            }
-            catch(Exception e)
-            {
-                return -2;
-            }
-        }
-        public int checkField(string path, string fileName, string fields)
-        {
-            try
-            {
-                return 0;
-            }
-            catch(Exception e)
-            {
-                return -2;
             }
         }
     }

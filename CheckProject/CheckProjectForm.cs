@@ -22,12 +22,12 @@ namespace CheckProject
         {
             InitializeComponent();
             curProjText.Enabled = false;
-            fileName = "db.db";
+            fileName = "db.db"; // db file명
             ManageFile mf = new ManageFile();
             int result = mf.checkDBFile(fileName);
-            if (result == -4)
+            if (result == -4) // db file을 새로 생성했을 경우
             {
-                mf.setCurrentProject("check.txt", null);
+                mf.setCurrentProject("check.txt", null); // 최근 project를 저장한 txt file
             }
             else if (result != -1)
             {
@@ -51,7 +51,7 @@ namespace CheckProject
             while (rows.Length > i)
             {
                 projectList.Items.Add(rows[i]);
-                mf.createDirectory(rows[i].Replace(".", @"\"));
+                mf.createDirectory(rows[i]);
                 i++;
             }
         }

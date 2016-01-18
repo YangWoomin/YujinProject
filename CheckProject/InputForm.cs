@@ -50,7 +50,7 @@ namespace CheckProject
                     MessageBox.Show("Input a name in Name Textbox for this work.");
                     return;
                 }
-                else if(CheckCharacter.checkString(inputText.Text) != 0)
+                else if(CheckCharacter.checkString(inputText.Text, 0) != 0)
                 {
                     return;
                 }
@@ -80,7 +80,7 @@ namespace CheckProject
                     MessageBox.Show("Input a name in Name Textbox for this work.");
                     return;
                 }
-                else if (CheckCharacter.checkString(inputText.Text) != 0)
+                else if (CheckCharacter.checkString(inputText.Text, 0) != 0)
                 {
                     return;
                 }
